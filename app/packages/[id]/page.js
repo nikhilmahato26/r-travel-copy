@@ -37,6 +37,8 @@ const INPUT = {
   fontFamily: 'inherit',
 }
 
+import { ALL_PACKAGES } from '@/lib/packages-data'
+
 export default function PackagePage({ params }) {
   const { id } = use(params)
   const [pkg, setPkg] = useState(null)
@@ -57,11 +59,9 @@ export default function PackagePage({ params }) {
   }, [])
 
   useEffect(() => {
-    fetch(`/api/packages/${encodeURIComponent(id)}`)
-      .then(r => r.ok ? r.json() : null)
-      .then(data => setPkg(data && !data.error ? data : null))
-      .catch(() => setPkg(null))
-      .finally(() => setLoading(false))
+    const found = ALL_PACKAGES.find(p => p.id === id)
+    setPkg(found || null)
+    setLoading(false)
   }, [id])
 
   const submitEnquiry = async (e) => {

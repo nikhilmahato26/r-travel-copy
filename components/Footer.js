@@ -12,6 +12,8 @@ function FbIcon() {
   return <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
 }
 
+import { ALL_DESTINATIONS } from '@/lib/destinations-data'
+
 export default function Footer() {
   const phone = usePhone()
   const whatsapp = useWhatsapp()
@@ -22,10 +24,7 @@ export default function Footer() {
   const [footerDests, setFooterDests] = useState([])
 
   useEffect(() => {
-    fetch('/api/destinations')
-      .then(r => r.ok ? r.json() : [])
-      .then(dests => setFooterDests(dests.filter(d => d.featured !== false)))
-      .catch(() => {})
+    setFooterDests(ALL_DESTINATIONS.filter(d => d.featured !== false))
   }, [])
 
   return (

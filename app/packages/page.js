@@ -5,6 +5,7 @@ import Footer from '@/components/Footer'
 import PackageCard from '@/components/PackageCard'
 import { usePackages } from '@/hooks/usePackages'
 import { usePhone } from '@/hooks/useSettings'
+import { ALL_DESTINATIONS } from '@/lib/destinations-data'
 
 export default function PackagesPage() {
   const [activeDest, setActiveDest] = useState('all')
@@ -13,10 +14,7 @@ export default function PackagesPage() {
   const phone = usePhone()
 
   useEffect(() => {
-    fetch('/api/destinations')
-      .then(r => r.ok ? r.json() : [])
-      .then(setDestinations)
-      .catch(() => {})
+    setDestinations(ALL_DESTINATIONS)
   }, [])
 
   const shown = packages.filter(p => {

@@ -46,6 +46,8 @@ function pkgToSlide(pkg) {
   }
 }
 
+import { ALL_PACKAGES } from '@/lib/packages-data'
+
 export default function HeroSlider() {
   const [slides, setSlides] = useState(FALLBACK_SLIDES)
   const [current, setCurrent] = useState(0)
@@ -53,12 +55,8 @@ export default function HeroSlider() {
   const [textKey, setTextKey] = useState(0)
 
   useEffect(() => {
-    fetch('/api/packages/featured')
-      .then(r => r.ok ? r.json() : [])
-      .then(pkgs => {
-        if (pkgs.length > 0) setSlides(pkgs.map(pkgToSlide))
-      })
-      .catch(() => {})
+    const pkgs = ALL_PACKAGES.filter(p => p.featured === true && p.status === 'approved' && p.hidden === false)
+    if (pkgs.length > 0) setSlides(pkgs.map(pkgToSlide))
   }, [])
 
   const go = useCallback((idx) => {

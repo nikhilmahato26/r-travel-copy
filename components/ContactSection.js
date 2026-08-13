@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { MapPin, Phone, Mail, Send } from 'lucide-react'
+import { ALL_DESTINATIONS } from '@/lib/destinations-data'
 
 export default function ContactSection({ phone, email, whatsapp }) {
   const [destinations, setDestinations] = useState([])
@@ -8,10 +9,7 @@ export default function ContactSection({ phone, email, whatsapp }) {
   const [status, setStatus] = useState(null) // null | 'sending' | 'sent' | 'error'
 
   useEffect(() => {
-    fetch('/api/destinations')
-      .then(r => r.ok ? r.json() : [])
-      .then(data => setDestinations(data))
-      .catch(() => {})
+    setDestinations(ALL_DESTINATIONS)
   }, [])
 
   const submit = async (e) => {

@@ -1,5 +1,6 @@
 import { Phone, Mail, MapPin } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 const Footer = () => {
   return (
@@ -9,28 +10,28 @@ const Footer = () => {
           
           {/* Brand & About (4 cols) */}
           <div className="lg:col-span-4 space-y-6">
-            <Link href="/" className="flex items-center gap-2.5 group w-fit">
-              <div className="bg-[#E34836] p-2 rounded-xl text-white shadow-md shadow-red-500/20">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M22 2 11 13M22 2l-7 20-4-9-9-4Z" />
-                </svg>
-              </div>
-              <div className="flex items-baseline gap-1">
-                <span className="text-white font-body font-bold text-lg tracking-[0.1em] uppercase">R</span>
-                <span className="text-[#E34836] font-heading font-semibold italic text-lg">travel</span>
+            <Link href="/" className="flex items-center group w-fit">
+              <div className="relative w-48 h-16 bg-white p-2 rounded-xl shadow-md group-hover:opacity-90 transition-opacity">
+                <Image
+                  src="/logo-rtw.png"
+                  alt="R Travel World"
+                  fill
+                  sizes="192px"
+                  className="object-contain object-left p-2"
+                />
               </div>
             </Link>
             <p className="text-gray-400 text-sm leading-relaxed max-w-sm">
               Your trusted travel partner for crafting unforgettable journeys. We offer customized domestic holiday packages and hassle-free travel planning services.
             </p>
             <div className="flex gap-4">
-              <a href="#" className="w-10 h-10 rounded-full border border-gray-700 flex items-center justify-center hover:bg-[#E34836] hover:border-[#E34836] transition-all text-gray-400 hover:text-white">
+              <a href="https://www.facebook.com/share/19BCh7jxou/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-gray-700 flex items-center justify-center hover:bg-[#E34836] hover:border-[#E34836] transition-all text-gray-400 hover:text-white">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
               </a>
-              <a href="#" className="w-10 h-10 rounded-full border border-gray-700 flex items-center justify-center hover:bg-[#E34836] hover:border-[#E34836] transition-all text-gray-400 hover:text-white">
+              <a href="#" className="w-10 h-10 rounded-full border border-gray-700 flex items-center justify-center hover:bg-[#E34836] hover:border-[#E34836] transition-all text-gray-400 hover:text-white hidden">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 4.01c-1 .49-1.98.689-3 .99-1.121-1.265-2.783-1.335-4.38-.737S11.977 6.323 12 8v1c-3.245.083-6.135-1.395-8-4 0 0-4.182 7.433 4 11-1.872 1.247-3.739 2.088-6 2 3.308 1.803 6.913 2.423 10.034 1.517 3.58-1.04 6.522-3.723 7.651-7.742a13.84 13.84 0 0 0 .497-3.753C20.18 7.773 21.692 5.25 22 4.009z"></path></svg>
               </a>
-              <a href="#" className="w-10 h-10 rounded-full border border-gray-700 flex items-center justify-center hover:bg-[#E34836] hover:border-[#E34836] transition-all text-gray-400 hover:text-white">
+              <a href="https://www.instagram.com/r_travel_world?igsh=MXNhZzF6ZWEyczJxNg==" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-gray-700 flex items-center justify-center hover:bg-[#E34836] hover:border-[#E34836] transition-all text-gray-400 hover:text-white">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
               </a>
             </div>
@@ -65,15 +66,21 @@ const Footer = () => {
             <ul className="space-y-5 text-gray-400 text-sm">
               <li className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-[#E34836] shrink-0" />
-                <span className="leading-relaxed">123 Travel Avenue, Tourism Sector,<br/>New Delhi 110001, India</span>
+                <span className="leading-relaxed">6/B, Jagdish Chamber, Opp. Rajkamal Petrol pump,<br/>Highway, Mehsana 384002- Gujarat</span>
               </li>
               <li className="flex items-center gap-3">
                 <Phone className="w-5 h-5 text-[#E34836] shrink-0" />
-                <a href="tel:+916238418293" className="hover:text-[#E34836] transition-colors">+91 6238418293</a>
+                <div className="flex flex-col">
+                  <a href="tel:+919427286755" className="hover:text-[#E34836] transition-colors">+91 94272 86755</a>
+                  <a href="tel:+919173136111" className="hover:text-[#E34836] transition-colors">+91 91731 36111</a>
+                </div>
               </li>
-              <li className="flex items-center gap-3">
-                <Mail className="w-5 h-5 text-[#E34836] shrink-0" />
-                <a href="mailto:info@rtravelworld.com" className="hover:text-[#E34836] transition-colors">info@rtravelworld.com</a>
+              <li className="flex items-start gap-3">
+                <Mail className="w-5 h-5 text-[#E34836] shrink-0 mt-0.5" />
+                <div className="flex flex-col">
+                  <a href="mailto:info@rtravelworld.com" className="hover:text-[#E34836] transition-colors">info@rtravelworld.com</a>
+                  <a href="mailto:rtravelworldmehsana@gmail.com" className="hover:text-[#E34836] transition-colors">rtravelworldmehsana@gmail.com</a>
+                </div>
               </li>
             </ul>
           </div>

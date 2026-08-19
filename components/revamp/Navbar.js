@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -22,33 +23,33 @@ const Navbar = () => {
 
   const navLinks = [
     { name: 'Home', href: '/#home' },
-    { name: 'About', href: '/#about' },
-    { name: 'Services', href: '/#services' },
-    { name: 'Destination', href: '/#destinations' },
-    { name: 'Packages', href: '/#packages' },
+    { name: 'About Us', href: '/#about' },
+    { name: 'Tours/Packages', href: '/#packages' },
+    { name: 'Flight Booking', href: '/#flight' },
+    { name: 'Railway Reservation', href: '/#train' },
+    { name: 'Contact Us', href: '/#contact' },
   ];
 
   return (
     <nav
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 font-body ${
-        isScrolled ? 'bg-white/95 backdrop-blur-md py-4 shadow-sm' : 'bg-transparent py-6'
+        isScrolled ? 'bg-white/95 backdrop-blur-md shadow-sm py-4' : 'bg-white py-4 shadow-sm'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
-            <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="bg-[#E34836] p-2 rounded-xl text-white shadow-md shadow-red-500/20 group-hover:scale-105 transition-transform duration-300">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M22 2 11 13M22 2l-7 20-4-9-9-4Z" />
-                </svg>
-              </div>
-              <div className="flex items-baseline gap-1">
-                <span className={`font-body font-bold text-lg tracking-[0.1em] uppercase group-hover:text-[#E34836] transition-colors ${
-                  isScrolled ? 'text-gray-900' : 'text-white'
-                }`}>R</span>
-                <span className="text-[#E34836] font-heading font-semibold italic text-lg">travel</span>
+            <Link href="/" className="flex items-center group">
+              <div className="relative w-36 h-12 md:w-48 md:h-16 group-hover:opacity-90 transition-transform scale-125 md:scale-[1.35] origin-left">
+                <Image
+                  src="/logo-rtw.png"
+                  alt="R Travel World"
+                  fill
+                  sizes="(max-width: 768px) 192px, 256px"
+                  className="object-contain object-left"
+                  priority
+                />
               </div>
             </Link>
           </div>
@@ -60,9 +61,7 @@ const Navbar = () => {
                 <Link
                   key={link.name}
                   href={link.href}
-                  className={`text-[15px] font-medium transition-colors hover:text-[#E34836] ${
-                    isScrolled ? 'text-gray-800' : 'text-white'
-                  }`}
+                  className="text-[15px] font-medium transition-colors text-gray-800 hover:text-[#E34836]"
                 >
                   {link.name}
                 </Link>
@@ -70,8 +69,8 @@ const Navbar = () => {
             </div>
             
             <div className="flex items-center space-x-6">
-              <a href="tel:+916238418293" className={`flex items-center text-[15px] font-semibold transition-colors hover:text-[#E34836] ${isScrolled ? 'text-gray-800' : 'text-white'}`}>
-                +91 6238418293
+              <a href="tel:+919427286755" className="flex items-center text-[15px] font-semibold transition-colors text-gray-800 hover:text-[#E34836]">
+                +91 94272 86755
               </a>
               <Link
                 href="/#contact"
@@ -86,7 +85,7 @@ const Navbar = () => {
           <div className="md:hidden flex items-center">
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className={`${isScrolled ? 'text-gray-900' : 'text-white'}`}
+              className="text-gray-900"
             >
               {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
             </button>
@@ -112,8 +111,8 @@ const Navbar = () => {
             </Link>
           ))}
           <div className="pt-4 border-t border-gray-100 flex flex-col gap-4">
-             <a href="tel:+916238418293" className="text-gray-800 font-semibold text-lg">
-                +91 6238418293
+             <a href="tel:+919427286755" className="text-gray-800 font-semibold text-lg">
+                +91 94272 86755
              </a>
             <Link
               href="/#contact"

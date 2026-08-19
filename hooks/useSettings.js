@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 
-const DEFAULTS = { phone: '919811408309' } 
+const DEFAULTS = { phone: '919427286755' } 
 let _cache = null
 let _fetchPromise = null
 
@@ -38,17 +38,17 @@ export function useWhatsapp() {
 }
 
 export function useEmail() {
-  return useSettings().email || ''
+  return useSettings().email || 'info@rtravelworld.com'
 }
 
 export function useEmail2() {
-  return useSettings().email2 || ''
+  return useSettings().email2 || 'rtravelworldmehsana@gmail.com'
 }
 
 export function useFacebook() {
-  return useSettings().facebook_url || 'https://facebook.com/share/1CPWAyox1N/?ref=1'
+  return useSettings().facebook_url || 'https://www.facebook.com/share/19BCh7jxou/'
 }
 
 export function useInstagram() {
-  return useSettings().instagram_url || 'https://www.instagram.com/greenkeralatrips?igsh=MXU3aG9rbmg0bHVvNw=='
+  return useSettings().instagram_url || 'https://www.instagram.com/r_travel_world?igsh=MXNhZzF6ZWEyczJxNg=='
 }

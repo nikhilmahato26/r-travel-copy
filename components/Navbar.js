@@ -18,11 +18,11 @@ export default function Navbar({ big = false }) {
 
   const navLinks = [
     { label: 'Home',         href: '/' },
-    { label: 'About',        href: '/#about' },
-    { label: 'Packages',     href: '/packages' },
-    { label: 'Fleet',        href: '/#fleet' },
-    { label: 'Gallery',      href: '/#gallery' },
-    { label: 'Contact',      href: '/#contact' },
+    { label: 'About Us',     href: '/#about' },
+    { label: 'Tours/Packages', href: '/packages' },
+    { label: 'Flight Booking', href: '/#flight' },
+    { label: 'Railway Reservation', href: '/#train' },
+    { label: 'Contact Us',   href: '/#contact' },
   ]
 
   return (

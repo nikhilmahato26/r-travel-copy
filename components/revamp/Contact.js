@@ -8,6 +8,26 @@ const Contact = () => {
   const [activeTab, setActiveTab] = useState('package');
   const [submitStatus, setSubmitStatus] = useState(null); // 'submitting' | 'success' | 'error'
 
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash;
+      if (hash === '#flight') {
+        setActiveTab('flight');
+      } else if (hash === '#train') {
+        setActiveTab('train');
+      } else if (hash === '#contact') {
+        setActiveTab('package'); // Default contact form is package enquiry
+      }
+    };
+
+    // Run on initial load
+    handleHashChange();
+
+    // Listen to hash changes
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
   // Settings & Packages
   const phone = usePhone();
   const whatsapp = useWhatsapp();
@@ -331,7 +351,7 @@ Address: ${trainForm.contactAddress || 'N/A'}`;
                 <div>
                   <span className="text-gray-400 text-xs font-semibold uppercase tracking-wider block mb-1">Office Location</span>
                   <p className="text-gray-800 text-sm font-semibold leading-relaxed">
-                    C-53, Second Floor, Chander Nagar,<br />Janak Puri, New Delhi - 110058
+                    6/B, Jagdish Chamber, Opp. Rajkamal Petrol pump,<br/>Highway, Mehsana 384002- Gujarat
                   </p>
                 </div>
               </div>
@@ -384,6 +404,7 @@ Address: ${trainForm.contactAddress || 'N/A'}`;
             {/* Tabs for Forms */}
             <div className="flex border-b border-gray-200 mb-8 gap-2 overflow-x-auto pb-1 scrollbar-none">
               <button
+                id="package"
                 onClick={() => { setActiveTab('package'); setSubmitStatus(null); }}
                 className={`py-3 px-4 text-sm font-bold border-b-2 whitespace-nowrap transition-colors cursor-pointer ${
                   activeTab === 'package' ? 'border-[#E34836] text-[#E34836]' : 'border-transparent text-gray-500 hover:text-gray-800'
@@ -392,6 +413,7 @@ Address: ${trainForm.contactAddress || 'N/A'}`;
                 Package Enquiry
               </button>
               <button
+                id="flight"
                 onClick={() => { setActiveTab('flight'); setSubmitStatus(null); }}
                 className={`py-3 px-4 text-sm font-bold border-b-2 whitespace-nowrap transition-colors cursor-pointer ${
                   activeTab === 'flight' ? 'border-[#E34836] text-[#E34836]' : 'border-transparent text-gray-500 hover:text-gray-800'
@@ -400,6 +422,7 @@ Address: ${trainForm.contactAddress || 'N/A'}`;
                 Flight Booking
               </button>
               <button
+                id="train"
                 onClick={() => { setActiveTab('train'); setSubmitStatus(null); }}
                 className={`py-3 px-4 text-sm font-bold border-b-2 whitespace-nowrap transition-colors cursor-pointer ${
                   activeTab === 'train' ? 'border-[#E34836] text-[#E34836]' : 'border-transparent text-gray-500 hover:text-gray-800'

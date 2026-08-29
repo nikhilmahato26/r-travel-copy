@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react';
-import { MapPin, Phone, Mail, MessageCircle, ArrowRight, UserPlus, Trash2, CheckCircle2, AlertCircle } from 'lucide-react';
-import { usePhone, useWhatsapp, useEmail } from '@/hooks/useSettings';
+import { MapPin, Phone, Mail, MessageCircle, ArrowRight, UserPlus, Trash2, CheckCircle2, AlertCircle, User } from 'lucide-react';
+import { usePhone, usePhone2, useWhatsapp, useEmail, useEmail2 } from '@/hooks/useSettings';
 import { usePackages } from '@/hooks/usePackages';
 
 const Contact = () => {
@@ -30,8 +30,10 @@ const Contact = () => {
 
   // Settings & Packages
   const phone = usePhone();
+  const phone2 = usePhone2();
   const whatsapp = useWhatsapp();
   const emailSettings = useEmail();
+  const emailSettings2 = useEmail2();
   const { packages, loaded: packagesLoaded } = usePackages();
 
   // Unique destinations list extracted dynamically
@@ -343,6 +345,19 @@ Address: ${trainForm.contactAddress || 'N/A'}`;
             </div>
 
             <div className="space-y-6">
+              {/* Founder */}
+              <div className="flex items-start gap-4">
+                <div className="bg-red-50 p-3.5 rounded-xl text-[#E34836] flex-shrink-0">
+                  <User size={22} />
+                </div>
+                <div>
+                  <span className="text-gray-400 text-xs font-semibold uppercase tracking-wider block mb-1">Founder & Owner</span>
+                  <p className="text-gray-800 text-sm font-semibold leading-relaxed">
+                    Priykant Gupta
+                  </p>
+                </div>
+              </div>
+
               {/* Location */}
               <div className="flex items-start gap-4">
                 <div className="bg-red-50 p-3.5 rounded-xl text-[#E34836] flex-shrink-0">
@@ -363,26 +378,30 @@ Address: ${trainForm.contactAddress || 'N/A'}`;
                 </div>
                 <div>
                   <span className="text-gray-400 text-xs font-semibold uppercase tracking-wider block mb-1">Phone Number</span>
-                  <a href={`tel:+${phone}`} className="text-gray-800 text-sm font-bold hover:text-[#E34836] transition-colors">
-                    +{phone}
+                  <a href={`tel:+${phone}`} className="text-gray-800 text-sm font-bold hover:text-[#E34836] transition-colors block">
+                    +{phone.substring(0,2)} {phone.substring(2,7)} {phone.substring(7)}
+                  </a>
+                  <a href={`tel:+${phone2}`} className="text-gray-800 text-sm font-bold hover:text-[#E34836] transition-colors block">
+                    +{phone2.substring(0,2)} {phone2.substring(2,7)} {phone2.substring(7)}
                   </a>
                 </div>
               </div>
 
               {/* Email */}
-              {emailSettings && (
-                <div className="flex items-start gap-4">
-                  <div className="bg-red-50 p-3.5 rounded-xl text-[#E34836] flex-shrink-0">
-                    <Mail size={22} />
-                  </div>
-                  <div>
-                    <span className="text-gray-400 text-xs font-semibold uppercase tracking-wider block mb-1">Email Address</span>
-                    <a href={`mailto:${emailSettings}`} className="text-gray-800 text-sm font-bold hover:text-[#E34836] transition-colors block">
-                      {emailSettings}
-                    </a>
-                  </div>
+              <div className="flex items-start gap-4">
+                <div className="bg-red-50 p-3.5 rounded-xl text-[#E34836] flex-shrink-0">
+                  <Mail size={22} />
                 </div>
-              )}
+                <div>
+                  <span className="text-gray-400 text-xs font-semibold uppercase tracking-wider block mb-1">Email Address</span>
+                  <a href={`mailto:${emailSettings}`} className="text-gray-800 text-sm font-bold hover:text-[#E34836] transition-colors block">
+                    {emailSettings}
+                  </a>
+                  <a href={`mailto:${emailSettings2}`} className="text-gray-800 text-sm font-bold hover:text-[#E34836] transition-colors block mt-1">
+                    {emailSettings2}
+                  </a>
+                </div>
+              </div>
             </div>
 
             <div className="pt-4">

@@ -41,6 +41,11 @@ export function useEmail() {
   return useSettings().email || 'info@rtravelworld.com'
 }
 
+export function usePhone2() {
+  return useSettings().phone2 || '919173136111'
+}
+
+
 export function useEmail2() {
   return useSettings().email2 || 'rtravelworldmehsana@gmail.com'
 }

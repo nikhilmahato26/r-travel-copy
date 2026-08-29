@@ -57,7 +57,7 @@ const About = () => {
                 Your Journey,<br />Our Responsibility
               </h2>
               <p className="text-gray-600 text-base leading-relaxed mb-4">
-                <strong>R TRAVEL WORLD</strong> is a trusted and customer-focused travel company dedicated to making every journey smooth, comfortable, affordable, and memorable. We specialize in Domestic & International Air Ticketing, Tour Packages, Railway Tour Planning, Customized Holidays, and Complete Travel Planning.
+                <strong>R TRAVEL WORLD</strong> is a trusted and customer-focused travel company founded by <strong>Priykant Gupta</strong>. We are dedicated to making every journey smooth, comfortable, affordable, and memorable. We specialize in Domestic & International Air Ticketing, Tour Packages, Railway Tour Planning, Customized Holidays, and Complete Travel Planning.
               </p>
               <p className="text-gray-600 text-base leading-relaxed">
                 With nearly <strong>15 years of experience</strong> in the travel industry, we have built our journey on the foundation of trust, personalized service, and customer satisfaction. Before establishing R TRAVEL WORLD, we successfully operated under the name <strong>Ranjan Services</strong>, gaining valuable experience and building strong relationships with our customers.

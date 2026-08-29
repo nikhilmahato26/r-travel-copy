@@ -5,35 +5,39 @@ import { Phone, MessageCircle, MapPin, Calendar, CheckCircle2, ArrowRight } from
 import { usePackages } from '@/hooks/usePackages'
 import { usePhone, useWhatsapp } from '@/hooks/useSettings'
 
-const CATEGORIES = [
-  { id: 'gujarat', label: 'Gujarat', dbName: 'Gujarat' },
-  { id: 'up-rajasthan', label: 'Uttar Pradesh & Rajasthan', dbName: 'Uttar Pradesh' },
-  { id: 'uttarakhand', label: 'Uttarakhand', dbName: 'Uttarakhand' },
-  { id: 'himachal', label: 'Himachal', dbName: 'Himachal' },
-  { id: 'jk', label: 'Jammu & Kashmir', dbName: 'Jammu Kashmir' },
-  { id: 'northeast', label: 'North East', dbName: 'North East' },
-  { id: 'bengal-odisha', label: 'Bengal & Odisha', dbName: 'Bengal & Odisha' },
-  { id: 'kerala', label: 'Kerala', dbName: 'Kerala' },
-  { id: 'tamilnadu', label: 'Tamil Nadu', dbName: 'Tamil Nadu' },
-  { id: 'goa', label: 'Goa', dbName: 'Goa' },
-  { id: 'maharashtra', label: 'Maharashtra', dbName: 'Maharashtra' },
-  { id: 'karnataka', label: 'Karnataka', dbName: 'Karnataka' },
-]
-
 function fmt(n) {
   if (!n) return ''
   return '₹' + Number(n).toLocaleString('en-IN')
 }
 
 export default function Packages() {
-  const [activeCategory, setActiveCategory] = useState('gujarat')
+  const [activeCategory, setActiveCategory] = useState('')
+  const [destOrder, setDestOrder] = useState([])
   const { packages, loaded } = usePackages()
   const phone = usePhone()
   const whatsapp = useWhatsapp()
 
-  // Filter packages by active category's dbName
-  const currentCategory = CATEGORIES.find(c => c.id === activeCategory)
-  const filteredPackages = packages.filter(pkg => pkg.destination === currentCategory?.dbName)
+  // Category tabs come from the admin — ordered by the admin's Categories list,
+  // limited to those that actually have live packages.
+  useEffect(() => {
+    fetch('/api/destinations')
+      .then(r => (r.ok ? r.json() : []))
+      .then(rows => setDestOrder(Array.isArray(rows) ? rows.map(d => d.name) : []))
+      .catch(() => setDestOrder([]))
+  }, [])
+
+  const pkgDestinations = Array.from(new Set(packages.map(p => p.destination).filter(Boolean)))
+  const categories = [
+    ...destOrder.filter(name => pkgDestinations.includes(name)),
+    ...pkgDestinations.filter(name => !destOrder.includes(name)).sort(),
+  ]
+
+  // Default the active tab to the first category once data is in.
+  useEffect(() => {
+    if (!activeCategory && categories.length > 0) setActiveCategory(categories[0])
+  }, [activeCategory, categories])
+
+  const filteredPackages = packages.filter(pkg => pkg.destination === activeCategory)
 
   return (
     <section id="packages" className="py-24 bg-gray-50 font-body">
@@ -54,17 +58,17 @@ export default function Packages() {
 
         {/* Category Tabs Selection */}
         <div className="flex gap-2.5 overflow-x-auto pb-4 mb-12 scrollbar-none snap-x snap-mandatory justify-start lg:justify-center lg:flex-wrap">
-          {CATEGORIES.map(cat => (
+          {categories.map(cat => (
             <button
-              key={cat.id}
-              onClick={() => setActiveCategory(cat.id)}
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
               className={`snap-align-start px-6 py-3 rounded-full text-sm font-semibold transition-all duration-300 whitespace-nowrap cursor-pointer ${
-                activeCategory === cat.id
+                activeCategory === cat
                   ? 'bg-gradient-to-r from-[#E34836] to-[#ff6b57] text-white shadow-lg shadow-red-500/20 transform -translate-y-0.5'
                   : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200/80 shadow-sm'
               }`}
             >
-              {cat.label}
+              {cat}
             </button>
           ))}
         </div>

@@ -134,24 +134,24 @@ const About = () => {
           </div>
 
           {/* Card 3: Our Commitment */}
-          <div className="bg-gradient-to-br from-navy to-slate-900 text-white rounded-3xl p-8 shadow-md hover:shadow-lg transition-all duration-300 flex flex-col justify-between">
+          <div className="bg-gradient-to-br from-navy-950 to-navy-900 text-white rounded-3xl p-8 shadow-md hover:shadow-lg transition-all duration-300 flex flex-col justify-between">
             <div>
-              <div className="w-12 h-12 bg-white/10 text-[#E34836] rounded-2xl flex items-center justify-center mb-6">
+              <div className="w-12 h-12 bg-white/10 text-white rounded-2xl flex items-center justify-center mb-6">
                 <ShieldCheck size={24} />
               </div>
               <h3 className="font-heading font-bold text-white text-xl mb-4">Our Commitment</h3>
-              <p className="text-gray-300 text-sm leading-relaxed mb-6">
+              <p className="text-gray-200 text-sm leading-relaxed mb-6">
                 For us, every booking represents a relationship built on trust. We believe in giving our 100% best in every package and every service, while maintaining transparency and putting our customers' interests first.
               </p>
             </div>
 
             {/* Tagline Callout */}
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 mt-6 space-y-2">
-              <div className="text-xs tracking-widest text-[#E34836] font-bold uppercase">R TRAVEL WORLD</div>
+            <div className="bg-white/10 border border-white/15 rounded-2xl p-5 mt-6 space-y-2">
+              <div className="text-xs tracking-widest text-[#ff8a5c] font-bold uppercase">R TRAVEL WORLD</div>
               <p className="font-heading font-bold text-sm text-white">
                 Plan Better. Travel Better. Travel With Confidence.
               </p>
-              <p className="text-gray-400 text-xs">Your journey matters to us — we make it memorable.</p>
+              <p className="text-gray-300 text-xs">Your journey matters to us — we make it memorable.</p>
             </div>
           </div>
 

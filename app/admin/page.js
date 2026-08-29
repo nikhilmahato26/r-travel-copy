@@ -39,16 +39,16 @@ export default function AdminLogin() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, background: '#fbf8f1' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, background: '#f9fafb' }}>
       <div style={{ width: '100%', maxWidth: 420 }}>
         <div style={{ background: '#fff', borderRadius: 24, overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.12)' }}>
 
           {/* Header */}
-          <div style={{ padding: '32px 32px 24px', textAlign: 'center', background: 'linear-gradient(135deg,#153e2d,#1c2575)' }}>
-            <div style={{ width: 74, height: 74, borderRadius: '50%', overflow: 'hidden', border: '4px solid rgba(255,255,255,0.3)', margin: '0 auto 12px' , background:'#ffffff'}}>
-              <Image src="/logo.png" alt="Triphoga" width={64} height={64} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <div style={{ padding: '32px 32px 24px', textAlign: 'center', background: 'linear-gradient(135deg,#E34836,#ff6b57)' }}>
+            <div style={{ padding: '8px 16px', borderRadius: '12px', overflow: 'hidden', border: '2px solid rgba(255,255,255,0.3)', margin: '0 auto 16px' , background:'#ffffff', width: 'fit-content'}}>
+              <Image src="/logo-rtw.png" alt="R Travel World" width={140} height={45} style={{ objectFit: 'contain' }} />
             </div>
-            <h1 style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 20, color: '#fff', marginBottom: 4 }}>Triphoga</h1>
+            <h1 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 22, color: '#fff', marginBottom: 4 }}>R Travel World</h1>
             <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)' }}>Admin Panel</p>
           </div>
 
@@ -98,7 +98,7 @@ export default function AdminLogin() {
               type="submit" disabled={loading}
               style={{
                 width: '100%', padding: '13px 0', borderRadius: 12, border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
-                background: 'linear-gradient(135deg,#7e5233,#c93d00)', color: '#fff',
+                background: 'linear-gradient(135deg,#E34836,#ff6b57)', color: '#fff',
                 fontWeight: 700, fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                 opacity: loading ? 0.7 : 1,
               }}

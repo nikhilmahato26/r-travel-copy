@@ -16,12 +16,15 @@ export async function GET() {
 
 export async function POST(request) {
   try {
-    const { package_id, package_title, name, phone, email, message } = await request.json()
+    const { package_id, package_title, destination, type, name, phone, email, message } = await request.json()
     if (!name?.trim() || !phone?.trim()) {
       return Response.json({ error: 'Name and phone are required' }, { status: 400 })
     }
+    const enquiryType = ['package', 'flight', 'train'].includes(type) ? type : 'package'
     const enquiry = await createEnquiry({
       package_id, package_title,
+      destination: destination?.trim() || null,
+      type: enquiryType,
       name: name.trim(), phone: phone.trim(),
       email: email?.trim() || null,
       message: message?.trim() || null,
@@ -30,7 +33,7 @@ export async function POST(request) {
     // promise can be killed when the serverless function freezes after responding).
     // A mail failure must not fail the enquiry, so log it and continue.
     try {
-      await sendEnquiryEmail({ name: name.trim(), phone: phone.trim(), email: email?.trim(), message: message?.trim(), package_title })
+      await sendEnquiryEmail({ name: name.trim(), phone: phone.trim(), email: email?.trim(), message: message?.trim(), package_title, destination: destination?.trim() || null, type: enquiryType })
     } catch (err) {
       console.error('Failed to send enquiry email:', err)
     }

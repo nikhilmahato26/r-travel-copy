@@ -6,7 +6,6 @@ import HomestayDetail from '@/components/HomestayDetail'
 import { usePhone, useWhatsapp } from '@/hooks/useSettings'
 import { Phone, MessageCircle, Clock, MapPin, Check, X, ChevronDown, ChevronUp, ArrowLeft, Send, Info, Users, Baby, BedDouble } from 'lucide-react'
 import Link from 'next/link'
-import { ALL_PACKAGES } from '@/lib/packages-data'
 
 function fmt(n) {
   return '₹' + Number(n).toLocaleString('en-IN')
@@ -42,9 +41,14 @@ export default function PackagePage({ params }) {
   }, [])
 
   useEffect(() => {
-    const found = ALL_PACKAGES.find(p => p.id === id)
-    setPkg(found || null)
-    setLoading(false)
+    let cancelled = false
+    setLoading(true)
+    fetch('/api/packages/' + encodeURIComponent(id))
+      .then(res => (res.ok ? res.json() : null))
+      .then(data => { if (!cancelled) setPkg(data && !data.error ? data : null) })
+      .catch(() => { if (!cancelled) setPkg(null) })
+      .finally(() => { if (!cancelled) setLoading(false) })
+    return () => { cancelled = true }
   }, [id])
 
   const submitEnquiry = async (e) => {
@@ -61,6 +65,8 @@ export default function PackagePage({ params }) {
         body: JSON.stringify({
           package_id: pkg.id,
           package_title: pkg.title,
+          type: 'package',
+          destination: pkg.destination,
           ...enquiry,
           message: msgWithId,
         }),

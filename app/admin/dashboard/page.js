@@ -7,13 +7,11 @@ import TagSelector from '@/components/TagSelector'
 import PackagePreview from '@/components/PackagePreview'
 import HomestayFields from '@/components/HomestayFields'
 import ImageUploader from '@/components/ImageUploader'
-import ClientsAdmin from '@/components/ClientsAdmin'
 import TeamAdmin from '@/components/TeamAdmin'
-import FleetAdmin from '@/components/FleetAdmin'
 import {
   Plus, Pencil, Copy, Trash2, LogOut, Eye, X, Check, ExternalLink, AlertTriangle,
   Package, MapPin, Inbox, Settings, Phone, MessageCircle, Mail, Calendar,
-  Building2, CheckCircle, XCircle, Star, Home, Ship, ImageIcon, Trash, Users
+  Building2, CheckCircle, XCircle, Star, Home, Ship, ImageIcon, Trash, Users, Download
 } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
@@ -37,6 +35,37 @@ const STATUS_CONFIG = {
   pending:  { label: 'Pending',   color: '#f59e0b', bg: '#fffbeb' },
   approved: { label: 'Approved',  color: '#22c55e', bg: '#f0fdf4' },
   rejected: { label: 'Rejected',  color: '#ef4444', bg: '#fef2f2' },
+}
+
+const ENQ_TYPE_LABEL = { package: 'Package', flight: 'Flight', train: 'Train' }
+// Bucket an enquiry into package / flight / train. Heuristics first so legacy rows
+// (created before the `type` column existed and defaulted to 'package') are classified
+// correctly from their booking title.
+function enquiryType(e) {
+  if (e.package_title === 'Flight Ticket Booking' || e.destination === 'Flight Booking') return 'flight'
+  if (e.package_title === 'Train Ticket Booking' || e.destination === 'Train Booking') return 'train'
+  if (e.type === 'flight' || e.type === 'train' || e.type === 'package') return e.type
+  return 'package'
+}
+
+function enquiriesToCSV(rows) {
+  const esc = v => {
+    const s = v == null ? '' : String(v)
+    return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s
+  }
+  const headers = ['Date', 'Type', 'Name', 'Phone', 'Email', 'Destination', 'Package ID', 'Package', 'Message']
+  const lines = [headers.join(',')]
+  for (const e of rows) {
+    lines.push([
+      new Date(e.created_at).toLocaleString('en-IN'),
+      ENQ_TYPE_LABEL[enquiryType(e)],
+      e.name, e.phone, e.email || '',
+      enquiryType(e) === 'package' ? (e.destination || '') : '',
+      e.package_id || '', e.package_title || '',
+      (e.message || '').replace(/\r?\n/g, ' \\n '),
+    ].map(esc).join(','))
+  }
+  return lines.join('\r\n')
 }
 
 const EMPTY_PKG = {
@@ -102,6 +131,9 @@ export default function Dashboard() {
   const [pkgAgencyFilter, setPkgAgencyFilter] = useState('all')
   const [agencyDropdownOpen, setAgencyDropdownOpen] = useState(false)
   const [agencyDropdownSearch, setAgencyDropdownSearch] = useState('')
+  const [catDropdownOpen, setCatDropdownOpen] = useState(false)
+  const [enqCategory, setEnqCategory] = useState('all')
+  const [enqModal, setEnqModal] = useState(null)
   const [pkgOptions, setPkgOptions] = useState({ inclusion: [], exclusion: [], highlight: [] })
 
   const [newDest, setNewDest] = useState({ name: '', color: '#7e5233', image_url: '', description: '', emoji: '📍', image_pos: '' })
@@ -604,10 +636,10 @@ export default function Dashboard() {
     topbarInner: { maxWidth: 1280, margin: '0 auto', padding: '0 20px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
     body:        { maxWidth: 1280, margin: '0 auto', padding: '28px 20px' },
     card:        { background: '#fff', borderRadius: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.06)', border: '1px solid #f3f4f6', overflow: 'hidden' },
-    btn:         (bg = '#7e5233', col = '#fff') => ({ padding: '8px 16px', borderRadius: 10, background: bg, color: col, border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }),
+    btn:         (bg = '#E34836', col = '#fff') => ({ padding: '8px 16px', borderRadius: 10, background: bg, color: col, border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }),
     input:       { width: '100%', padding: '10px 12px', borderRadius: 10, border: '1.5px solid #e5e7eb', fontSize: 13, color: '#111', background: '#f9fafb', outline: 'none', boxSizing: 'border-box' },
     label:       { fontSize: 11, fontWeight: 700, color: '#6b7280', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 5, display: 'block' },
-    tag:         (active, color = '#7e5233') => ({
+    tag:         (active, color = '#E34836') => ({
                    padding: '6px 14px', borderRadius: 999, fontSize: 12, fontWeight: 600, border: 'none', cursor: 'pointer',
                    background: active ? color : '#fff', color: active ? '#fff' : '#555',
                    boxShadow: active ? 'none' : '0 1px 4px rgba(0,0,0,0.07)',
@@ -726,16 +758,14 @@ export default function Dashboard() {
               { key: 'enquiries',     label: 'Enquiries',    icon: Inbox,     badge: enquiries.length > 0 && section !== 'enquiries' ? enquiries.length : null },
               { key: 'testimonials',  label: 'Testimonials', icon: MessageCircle },
               { key: 'gallery',       label: 'Gallery',      icon: ImageIcon },
-              { key: 'clients',       label: 'Clients',      icon: Building2 },
               { key: 'team',          label: 'Team',         icon: Users },
-              { key: 'fleet',         label: 'Fleet',        icon: Ship },
               { key: 'settings',      label: 'Settings',     icon: Settings },
             ].map(({ key, label, icon: Icon, badge }) => (
               <button key={key} onClick={() => setSection(key)}
-                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 20px', fontSize: 13, fontWeight: 600, border: 'none', background: section === key ? '#fbf8f1' : 'transparent', width: '100%', textAlign: 'left', cursor: 'pointer', borderRight: `3px solid ${section === key ? '#7e5233' : 'transparent'}`, color: section === key ? '#7e5233' : '#6b7280', position: 'relative' }}>
+                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 20px', fontSize: 13, fontWeight: 600, border: 'none', background: section === key ? '#fef2f2' : 'transparent', width: '100%', textAlign: 'left', cursor: 'pointer', borderRight: `3px solid ${section === key ? '#E34836' : 'transparent'}`, color: section === key ? '#E34836' : '#6b7280', position: 'relative' }}>
                 <Icon size={16} /> {label}
                 {badge && (
-                  <span style={{ marginLeft: 'auto', background: '#7e5233', color: '#fff', borderRadius: 999, fontSize: 10, fontWeight: 700, padding: '1px 6px', minWidth: 18, textAlign: 'center' }}>
+                  <span style={{ marginLeft: 'auto', background: '#E34836', color: '#fff', borderRadius: 999, fontSize: 10, fontWeight: 700, padding: '1px 6px', minWidth: 18, textAlign: 'center' }}>
                     {badge}
                   </span>
                 )}
@@ -835,11 +865,32 @@ export default function Dashboard() {
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 16 }}>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                 {/* Category filter */}
-                <div style={{ display: 'flex', gap: 6 }}>
-                  <button onClick={() => setPkgFilter('all')} style={S.tag(pkgFilter === 'all')}>All</button>
-                  {destinations.map(d => (
-                    <button key={d.name} onClick={() => setPkgFilter(d.name)} style={S.tag(pkgFilter === d.name)}>{d.name}</button>
-                  ))}
+                <div style={{ position: 'relative' }}>
+                  <button
+                    onClick={() => setCatDropdownOpen(o => !o)}
+                    style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 14px', borderRadius: 10, border: `1.5px solid ${pkgFilter !== 'all' ? '#7e5233' : '#e5e7eb'}`, background: pkgFilter !== 'all' ? '#fff5ef' : '#fff', fontSize: 13, color: pkgFilter !== 'all' ? '#7e5233' : '#374151', cursor: 'pointer', fontWeight: pkgFilter !== 'all' ? 700 : 400, minWidth: 180, justifyContent: 'space-between' }}
+                  >
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <MapPin size={13} />
+                      {pkgFilter === 'all' ? 'All Categories' : pkgFilter}
+                    </span>
+                    <span style={{ fontSize: 10, opacity: 0.5 }}>▾</span>
+                  </button>
+                  {catDropdownOpen && (
+                    <div style={{ position: 'absolute', top: '100%', left: 0, zIndex: 100, marginTop: 4, background: '#fff', border: '1.5px solid #e5e7eb', borderRadius: 12, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', minWidth: 220, overflow: 'hidden' }}
+                      onMouseLeave={() => setCatDropdownOpen(false)}
+                    >
+                      <div style={{ maxHeight: 280, overflowY: 'auto' }}>
+                        {[{ value: 'all', label: 'All Categories' }, ...destinations.map(d => ({ value: d.name, label: d.name }))].map(opt => (
+                          <button key={opt.value} onClick={() => { setPkgFilter(opt.value); setCatDropdownOpen(false) }}
+                            style={{ width: '100%', padding: '9px 14px', textAlign: 'left', border: 'none', background: pkgFilter === opt.value ? '#fff5ef' : 'none', color: pkgFilter === opt.value ? '#7e5233' : '#374151', fontSize: 13, fontWeight: pkgFilter === opt.value ? 700 : 400, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
+                            {opt.value !== 'all' && <MapPin size={12} style={{ color: '#9ca3af', flexShrink: 0 }} />}
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
@@ -851,32 +902,6 @@ export default function Dashboard() {
                 </button>
               </div>
             </div>
-
-            {/* Hero section manager */}
-            {featuredPackages.length > 0 && (
-              <div style={{ background: 'linear-gradient(135deg,#1e3a5f,#0f172a)', borderRadius: 16, padding: '16px 20px', marginBottom: 16 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                  <Star size={15} style={{ color: '#fbbf24', flexShrink: 0 }} />
-                  <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>Hero Section ({featuredPackages.length} active)</span>
-                </div>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  {featuredPackages.map(p => {
-                    const expiresAt = p.featuredAt ? new Date(new Date(p.featuredAt).getTime() + p.featuredDays * 86400000) : null
-                    const daysLeft = expiresAt ? Math.ceil((expiresAt - Date.now()) / 86400000) : null
-                    return (
-                      <div key={p.id} style={{ background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: 10, padding: '6px 12px' }}>
-                        <div style={{ fontSize: 12, color: '#fbbf24', fontWeight: 700 }}>{p.title}</div>
-                        {daysLeft !== null && (
-                          <div style={{ fontSize: 10, color: daysLeft <= 3 ? '#f87171' : 'rgba(255,255,255,0.5)', marginTop: 2, fontWeight: 600 }}>
-                            {daysLeft > 0 ? `${daysLeft}d left` : 'Expired'}
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
 
             {/* Table */}
             <div style={S.card}>
@@ -1152,48 +1177,125 @@ export default function Dashboard() {
         )}
 
         {/* ── Enquiries ── */}
-        {section === 'enquiries' && (
+        {section === 'enquiries' && (() => {
+          const TYPE_TABS = [
+            { key: 'all', label: 'All' },
+            { key: 'package', label: 'Package' },
+            { key: 'flight', label: 'Flight' },
+            { key: 'train', label: 'Train' },
+          ]
+          const shownEnquiries = enqCategory === 'all'
+            ? enquiries
+            : enquiries.filter(e => enquiryType(e) === enqCategory)
+          const exportCSV = () => {
+            const csv = enquiriesToCSV(shownEnquiries)
+            const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' })
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = `enquiries-${enqCategory === 'all' ? 'all' : enqCategory}-${new Date().toISOString().slice(0, 10)}.csv`
+            document.body.appendChild(a); a.click(); a.remove()
+            URL.revokeObjectURL(url)
+          }
+          return (
           <>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, gap: 12, flexWrap: 'wrap' }}>
               <div>
                 <h2 style={{ fontWeight: 700, fontSize: 18, color: '#111', margin: 0 }}>Customer Enquiries</h2>
-                <p style={{ fontSize: 13, color: '#9ca3af', margin: '4px 0 0' }}>{enquiries.length} total</p>
+                <p style={{ fontSize: 13, color: '#9ca3af', margin: '4px 0 0' }}>{shownEnquiries.length} shown · {enquiries.length} total</p>
               </div>
-              <button onClick={fetchEnquiries} style={S.btn('#f3f4f6', '#555')}>Refresh</button>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={exportCSV} disabled={shownEnquiries.length === 0} style={{ ...S.btn('#E34836', '#fff'), opacity: shownEnquiries.length === 0 ? 0.5 : 1, cursor: shownEnquiries.length === 0 ? 'not-allowed' : 'pointer' }}>
+                  <Download size={13} /> Export Excel
+                </button>
+                <button onClick={fetchEnquiries} style={S.btn('#f3f4f6', '#555')}>Refresh</button>
+              </div>
             </div>
-            {enquiries.length === 0 ? (
+            {enquiries.length > 0 && (
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 16 }}>
+                {TYPE_TABS.map(t => (
+                  <button key={t.key} onClick={() => setEnqCategory(t.key)} style={S.tag(enqCategory === t.key)}>
+                    {t.label}{t.key !== 'all' && <span style={{ opacity: 0.6 }}> ({enquiries.filter(e => enquiryType(e) === t.key).length})</span>}
+                  </button>
+                ))}
+              </div>
+            )}
+            {shownEnquiries.length === 0 ? (
               <div style={{ ...S.card, padding: '60px 24px', textAlign: 'center', color: '#9ca3af' }}>
                 <Inbox size={48} style={{ margin: '0 auto 16px', opacity: 0.3 }} />
-                <p style={{ fontWeight: 600, fontSize: 15 }}>No enquiries yet</p>
+                <p style={{ fontWeight: 600, fontSize: 15 }}>{enquiries.length === 0 ? 'No enquiries yet' : 'No enquiries in this category'}</p>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {enquiries.map(enq => (
+                {shownEnquiries.map(enq => (
                   <div key={enq.id} style={{ ...S.card, padding: '16px 20px' }}>
                     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
                           <span style={{ fontWeight: 700, fontSize: 15, color: '#111' }}>{enq.name}</span>
+                          <span style={{ fontSize: 11, background: '#fef2f2', color: '#E34836', padding: '2px 10px', borderRadius: 999, fontWeight: 700 }}>{ENQ_TYPE_LABEL[enquiryType(enq)]}</span>
+                          {enquiryType(enq) === 'package' && enq.destination && <span style={{ fontSize: 11, background: '#f3f4f6', color: '#374151', padding: '2px 10px', borderRadius: 999, fontWeight: 600 }}>{enq.destination}</span>}
                           {enq.package_title && <span style={{ fontSize: 11, background: '#fff5ef', color: '#7e5233', padding: '2px 10px', borderRadius: 999, fontWeight: 600 }}>{enq.package_title}</span>}
                           <span style={{ fontSize: 11, color: '#9ca3af', display: 'flex', alignItems: 'center', gap: 3 }}><Calendar size={10} /> {fmtDate(enq.created_at)}</span>
                         </div>
-                        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: enq.message ? 10 : 0 }}>
+                        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
                           <a href={`tel:+${enq.phone}`} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: '#374151', textDecoration: 'none' }}><Phone size={13} style={{ color: '#7e5233' }} /> {enq.phone}</a>
                           <a href={`https://wa.me/${enq.phone.replace(/\D/g,'')}`} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: '#25d366', textDecoration: 'none' }}><MessageCircle size={13} /> WhatsApp</a>
                           {enq.email && <a href={`mailto:${enq.email}`} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: '#374151', textDecoration: 'none' }}><Mail size={13} style={{ color: '#6b7280' }} /> {enq.email}</a>}
                         </div>
-                        {enq.message && <p style={{ fontSize: 13, color: '#6b7280', background: '#f9fafb', borderRadius: 10, padding: '10px 12px', margin: 0, lineHeight: 1.6 }}>&ldquo;{enq.message}&rdquo;</p>}
                       </div>
-                      <button onClick={() => handleDeleteEnquiry(enq.id)} style={{ width: 30, height: 30, borderRadius: 8, border: '1px solid #fee2e2', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f87171', flexShrink: 0 }}>
-                        <Trash2 size={13} />
-                      </button>
+                      <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                        <button onClick={() => setEnqModal(enq)} style={{ ...S.btn('#f3f4f6', '#374151'), padding: '6px 12px' }}>
+                          <Eye size={13} /> View
+                        </button>
+                        <button onClick={() => handleDeleteEnquiry(enq.id)} style={{ width: 30, height: 30, borderRadius: 8, border: '1px solid #fee2e2', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f87171' }}>
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
             )}
+
+            {enqModal && (
+              <div style={S.overlay} onClick={() => setEnqModal(null)}>
+                <div style={{ ...S.modal, maxWidth: 560 }} onClick={e => e.stopPropagation()}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 22px', borderBottom: '1px solid #f3f4f6' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <span style={{ fontSize: 11, background: '#fef2f2', color: '#E34836', padding: '3px 10px', borderRadius: 999, fontWeight: 700 }}>{ENQ_TYPE_LABEL[enquiryType(enqModal)]}</span>
+                      <h3 style={{ fontSize: 17, fontWeight: 700, color: '#111', margin: 0 }}>{enqModal.name}</h3>
+                    </div>
+                    <button onClick={() => setEnqModal(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', display: 'flex' }}><X size={18} /></button>
+                  </div>
+                  <div style={{ padding: '18px 22px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '110px 1fr', rowGap: 10, columnGap: 12, fontSize: 13, marginBottom: 16 }}>
+                      <span style={{ color: '#9ca3af', fontWeight: 600 }}>Received</span>
+                      <span style={{ color: '#111' }}>{fmtDate(enqModal.created_at)}</span>
+                      <span style={{ color: '#9ca3af', fontWeight: 600 }}>Phone</span>
+                      <span><a href={`tel:+${enqModal.phone}`} style={{ color: '#7e5233', textDecoration: 'none', fontWeight: 600 }}>{enqModal.phone}</a> · <a href={`https://wa.me/${enqModal.phone.replace(/\D/g,'')}`} target="_blank" rel="noopener noreferrer" style={{ color: '#25d366', textDecoration: 'none', fontWeight: 600 }}>WhatsApp</a></span>
+                      {enqModal.email && <><span style={{ color: '#9ca3af', fontWeight: 600 }}>Email</span><span><a href={`mailto:${enqModal.email}`} style={{ color: '#111', textDecoration: 'none' }}>{enqModal.email}</a></span></>}
+                      {enquiryType(enqModal) === 'package' && enqModal.destination && <><span style={{ color: '#9ca3af', fontWeight: 600 }}>Destination</span><span style={{ color: '#111' }}>{enqModal.destination}</span></>}
+                      {enqModal.package_id && <><span style={{ color: '#9ca3af', fontWeight: 600 }}>Package ID</span><span style={{ color: '#111', fontFamily: 'monospace' }}>{enqModal.package_id}</span></>}
+                      {enqModal.package_title && <><span style={{ color: '#9ca3af', fontWeight: 600 }}>Package</span><span style={{ color: '#111' }}>{enqModal.package_title}</span></>}
+                    </div>
+                    {enqModal.message && (
+                      <>
+                        <span style={{ color: '#9ca3af', fontWeight: 600, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Details</span>
+                        <pre style={{ marginTop: 6, fontSize: 12.5, color: '#374151', background: '#f9fafb', border: '1px solid #f3f4f6', borderRadius: 10, padding: '12px 14px', whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontFamily: 'inherit', lineHeight: 1.65, maxHeight: 320, overflowY: 'auto' }}>{enqModal.message}</pre>
+                      </>
+                    )}
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 18 }}>
+                      <button onClick={() => { handleDeleteEnquiry(enqModal.id); setEnqModal(null) }} style={S.btn('#fef2f2', '#dc2626')}><Trash2 size={13} /> Delete</button>
+                      <button onClick={() => setEnqModal(null)} style={S.btn('#f3f4f6', '#374151')}>Close</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </>
-        )}
+          )
+        })()}
 
         {/* ── Settings ── */}
         
@@ -1276,9 +1378,7 @@ export default function Dashboard() {
           </div>
         )}
 
-        {section === 'clients' && <ClientsAdmin />}
         {section === 'team' && <TeamAdmin />}
-        {section === 'fleet' && <FleetAdmin />}
 
         {section === 'settings' && (
           <>
@@ -1452,7 +1552,18 @@ export default function Dashboard() {
                     <label style={S.label}>Subtitle</label>
                     <input value={form.subtitle} onChange={e => setForm(f => ({ ...f, subtitle: e.target.value }))} style={S.input} />
                   </div>
-                  
+                  <div>
+                    <label style={S.label}>Badge Label</label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <input value={form.badge} onChange={e => setForm(f => ({ ...f, badge: e.target.value }))} style={S.input} placeholder="e.g. Hills & Lakes" />
+                      <input type="color" value={form.badgeColor || '#E34836'} onChange={e => setForm(f => ({ ...f, badgeColor: e.target.value }))} style={{ width: 38, height: 38, borderRadius: 8, border: '1.5px solid #e5e7eb', background: 'none', cursor: 'pointer', flexShrink: 0, padding: 2 }} title="Badge colour" />
+                    </div>
+                  </div>
+                  <div>
+                    <label style={S.label}>Price Note</label>
+                    <input value={form.priceNote} onChange={e => setForm(f => ({ ...f, priceNote: e.target.value }))} style={S.input} placeholder="Per Person" />
+                  </div>
+
                   {(() => {
                     const isHS = form.category === 'homestay'
                     const isHB = form.category === 'houseboat'

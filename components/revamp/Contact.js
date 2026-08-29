@@ -192,6 +192,8 @@ Email: ${packageForm.email || 'N/A'}`;
           name: packageForm.name,
           phone: packageForm.phone,
           email: packageForm.email,
+          type: 'package',
+          destination: packageForm.destination || null,
           package_id: packageForm.packageId || null,
           package_title: pkgTitleText,
           message: message
@@ -248,6 +250,7 @@ Address: ${flightForm.contactAddress || 'N/A'}`;
           name: flightForm.contactName,
           phone: flightForm.contactPhone,
           email: flightForm.contactEmail,
+          type: 'flight',
           package_title: 'Flight Ticket Booking',
           message: message
         })
@@ -306,6 +309,7 @@ Address: ${trainForm.contactAddress || 'N/A'}`;
         body: JSON.stringify({
           name: primaryName,
           phone: trainForm.contactPhone,
+          type: 'train',
           package_title: 'Train Ticket Booking',
           message: message
         })

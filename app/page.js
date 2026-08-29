@@ -1,5 +1,4 @@
 'use client'
-import SplashScreen from '@/components/revamp/SplashScreen'
 import Navbar from '@/components/revamp/Navbar'
 import Hero from '@/components/revamp/Hero'
 import About from '@/components/revamp/About'
@@ -13,12 +12,11 @@ import FloatingWhatsApp from '@/components/FloatingWhatsApp'
 export default function HomePage() {
   return (
     <main style={{ minHeight: '100vh', background: '#fff', overflowX: 'hidden' }}>
-      <SplashScreen />
       <Navbar />
       <Hero />
+      <Packages />
       <About />
       <Services />
-      <Packages />
       <Destinations />
       <Contact />
       <Footer />

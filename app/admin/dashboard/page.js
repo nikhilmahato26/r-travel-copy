@@ -48,22 +48,77 @@ function enquiryType(e) {
   return 'package'
 }
 
-function enquiriesToCSV(rows) {
+// Pull the "Key: Value" lines, numbered people, and free-text notes out of the
+// pre-formatted enquiry message the booking forms build.
+function parseEnquiryDetails(msg) {
+  const fields = {}, people = [], notes = []
+  for (const raw of String(msg || '').split(/\r?\n/)) {
+    const line = raw.trim()
+    if (!line) continue
+    if (/^-{2,}.*-{2,}$/.test(line)) continue                 // "--- AIR TICKET BOOKING REQUEST ---"
+    if (/^[A-Z][A-Z /]+:$/.test(line)) continue               // section header "CONTACT DETAILS:"
+    const num = line.match(/^\d+[.)]\s*(.+)$/)
+    if (num) { people.push(num[1].trim()); continue }
+    const kv = line.match(/^([A-Za-z][\w ./&-]{0,38}?):\s+(.+)$/)
+    if (kv) { fields[kv[1].trim()] = kv[2].trim(); continue }
+    notes.push(line)
+  }
+  return { fields, people, notes: notes.join(' ') }
+}
+
+// Column layout per enquiry type. Each entry: [Header, (enquiry, parsed) => cell]
+const COMMON_COLS = [
+  ['Enquiry ID', e => e.id],
+  ['Received', e => new Date(e.created_at).toLocaleString('en-IN')],
+  ['Name', e => e.name],
+  ['Phone', e => e.phone],
+  ['Email', (e, d) => e.email || d.fields['Email'] || d.fields['Email ID'] || ''],
+]
+const F = (d, ...keys) => { for (const k of keys) if (d.fields[k]) return d.fields[k]; return '' }
+const ENQ_EXPORT_COLS = {
+  package: [
+    ...COMMON_COLS,
+    ['Destination', (e, d) => e.destination || F(d, 'Destination')],
+    ['Package', (e, d) => e.package_title || F(d, 'Package Selected')],
+    ['Package ID', (e, d) => e.package_id || F(d, 'Package ID')],
+    ['Travellers', (e, d) => d.people.join(' ; ')],
+    ['Requirements', (e, d) => d.notes],
+  ],
+  flight: [
+    ...COMMON_COLS,
+    ['Journey Date', (e, d) => F(d, 'Journey Date')],
+    ['From', (e, d) => F(d, 'From')],
+    ['To', (e, d) => F(d, 'To')],
+    ['Flight No.', (e, d) => F(d, 'Flight Name/No.', 'Flight No.', 'Flight')],
+    ['Departure Time', (e, d) => F(d, 'Departure Time')],
+    ['Class', (e, d) => F(d, 'Class')],
+    ['Trip Type', (e, d) => F(d, 'Trip Type')],
+    ['Passengers', (e, d) => d.people.join(' ; ')],
+    ['Address', (e, d) => F(d, 'Address')],
+  ],
+  train: [
+    ...COMMON_COLS,
+    ['From Station', (e, d) => F(d, 'From Station')],
+    ['To Station', (e, d) => F(d, 'To Station')],
+    ['Journey Date', (e, d) => F(d, 'Journey Date')],
+    ['Train No. & Name', (e, d) => F(d, 'Train No. & Name', 'Train No', 'Train')],
+    ['Class', (e, d) => F(d, 'Class')],
+    ['Quota', (e, d) => F(d, 'Quota')],
+    ['Passengers', (e, d) => d.people.join(' ; ')],
+    ['Address', (e, d) => F(d, 'Address')],
+  ],
+}
+
+function enquiriesToCSV(rows, type) {
   const esc = v => {
     const s = v == null ? '' : String(v)
-    return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s
+    return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s
   }
-  const headers = ['Date', 'Type', 'Name', 'Phone', 'Email', 'Destination', 'Package ID', 'Package', 'Message']
-  const lines = [headers.join(',')]
+  const cols = ENQ_EXPORT_COLS[type] || ENQ_EXPORT_COLS.package
+  const lines = [cols.map(c => c[0]).join(',')]
   for (const e of rows) {
-    lines.push([
-      new Date(e.created_at).toLocaleString('en-IN'),
-      ENQ_TYPE_LABEL[enquiryType(e)],
-      e.name, e.phone, e.email || '',
-      enquiryType(e) === 'package' ? (e.destination || '') : '',
-      e.package_id || '', e.package_title || '',
-      (e.message || '').replace(/\r?\n/g, ' \\n '),
-    ].map(esc).join(','))
+    const d = parseEnquiryDetails(e.message)
+    lines.push(cols.map(c => esc(c[1](e, d))).join(','))
   }
   return lines.join('\r\n')
 }
@@ -1188,15 +1243,17 @@ export default function Dashboard() {
             ? enquiries
             : enquiries.filter(e => enquiryType(e) === enqCategory)
           const exportCSV = () => {
-            const csv = enquiriesToCSV(shownEnquiries)
+            if (enqCategory === 'all') return
+            const csv = enquiriesToCSV(shownEnquiries, enqCategory)
             const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' })
             const url = URL.createObjectURL(blob)
             const a = document.createElement('a')
             a.href = url
-            a.download = `enquiries-${enqCategory === 'all' ? 'all' : enqCategory}-${new Date().toISOString().slice(0, 10)}.csv`
+            a.download = `enquiries-${enqCategory}-${new Date().toISOString().slice(0, 10)}.csv`
             document.body.appendChild(a); a.click(); a.remove()
             URL.revokeObjectURL(url)
           }
+          const activeLabel = TYPE_TABS.find(t => t.key === enqCategory)?.label
           return (
           <>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, gap: 12, flexWrap: 'wrap' }}>
@@ -1205,12 +1262,17 @@ export default function Dashboard() {
                 <p style={{ fontSize: 13, color: '#9ca3af', margin: '4px 0 0' }}>{shownEnquiries.length} shown · {enquiries.length} total</p>
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
-                <button onClick={exportCSV} disabled={shownEnquiries.length === 0} style={{ ...S.btn('#E34836', '#fff'), opacity: shownEnquiries.length === 0 ? 0.5 : 1, cursor: shownEnquiries.length === 0 ? 'not-allowed' : 'pointer' }}>
-                  <Download size={13} /> Export Excel
-                </button>
+                {enqCategory !== 'all' && (
+                  <button onClick={exportCSV} disabled={shownEnquiries.length === 0} style={{ ...S.btn('#E34836', '#fff'), opacity: shownEnquiries.length === 0 ? 0.5 : 1, cursor: shownEnquiries.length === 0 ? 'not-allowed' : 'pointer' }}>
+                    <Download size={13} /> Export {activeLabel}
+                  </button>
+                )}
                 <button onClick={fetchEnquiries} style={S.btn('#f3f4f6', '#555')}>Refresh</button>
               </div>
             </div>
+            {enqCategory === 'all' && enquiries.length > 0 && (
+              <p style={{ fontSize: 12, color: '#9ca3af', margin: '-4px 0 12px' }}>Pick a category below to export it to Excel.</p>
+            )}
             {enquiries.length > 0 && (
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 16 }}>
                 {TYPE_TABS.map(t => (

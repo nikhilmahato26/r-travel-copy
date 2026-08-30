@@ -9,7 +9,7 @@ function savings(orig, sale) {
   return formatPrice(orig - sale)
 }
 
-export default function PackageCard({ pkg, phone = '919846034558' }) {
+export default function PackageCard({ pkg, phone = '919427286755' }) {
   const save = savings(pkg.originalPrice, pkg.salePrice)
   const router = useRouter()
 

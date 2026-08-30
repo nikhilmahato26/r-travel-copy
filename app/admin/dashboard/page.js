@@ -174,8 +174,6 @@ export default function Dashboard() {
   const [editId, setEditId] = useState(null)
   const [deleteId, setDeleteId] = useState(null)
   const [confirm, setConfirm] = useState(null)
-  const [featureModal, setFeatureModal] = useState(null) // { id, order } | null
-  const [featureDays, setFeatureDays] = useState('30')
   const [tab, setTab] = useState('basic')
   const [showPreview, setShowPreview] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -451,25 +449,18 @@ export default function Dashboard() {
     }
   }
 
-  const handleFeature = async (id, featured, order, days = 30) => {
+  const handleFeature = async (id, featured, order = 0) => {
     setActionLoading(`feature-${id}`)
     try {
-      const res = await fetch(`/api/packages/${id}/feature`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ featured, order, days: Number(days) }) })
+      const res = await fetch(`/api/packages/${id}/feature`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ featured, order }) })
       if (!res.ok) throw new Error()
       await fetchPackages()
-      toast.success(featured ? `Added to hero for ${days} day${days != 1 ? 's' : ''}!` : 'Removed from hero')
+      toast.success(featured ? 'Added to hero' : 'Removed from hero')
     } catch {
       toast.error('Failed to update featured status')
     } finally {
       setActionLoading(null)
     }
-  }
-
-  const handleFeatureConfirm = async () => {
-    if (!featureModal) return
-    const days = Math.max(1, parseInt(featureDays) || 30)
-    setFeatureModal(null)
-    await handleFeature(featureModal.id, true, featureModal.order, days)
   }
 
   // ─── Agency handlers ───────────────────────────────────────────────────────
@@ -1016,27 +1007,15 @@ export default function Dashboard() {
                               {pkg.status === 'approved' && (
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
                                   <button
-                                    onClick={() => {
-                                      if (pkg.featured) {
-                                        handleFeature(pkg.id, false, 0)
-                                      } else {
-                                        setFeatureDays('30')
-                                        setFeatureModal({ id: pkg.id, order: featuredPackages.length })
-                                      }
-                                    }}
+                                    onClick={() => handleFeature(pkg.id, !pkg.featured, pkg.featured ? 0 : featuredPackages.length)}
                                     disabled={actionLoading === `feature-${pkg.id}`}
-                                    title={pkg.featured ? 'Remove from hero' : 'Push to hero'}
+                                    title={pkg.featured ? 'Remove from hero' : 'Add to hero'}
                                     style={{ width: 30, height: 30, borderRadius: 8, border: `1px solid ${pkg.featured ? '#fde68a' : '#e5e7eb'}`, background: pkg.featured ? '#fffbeb' : 'none', cursor: actionLoading === `feature-${pkg.id}` ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                     {actionLoading === `feature-${pkg.id}`
                                       ? <span style={{ width: 10, height: 10, border: '2px solid #fde68a', borderTop: '2px solid #f59e0b', borderRadius: '50%', animation: 'spin 1s linear infinite', display: 'inline-block' }} />
                                       : <Star size={14} style={{ color: pkg.featured ? '#f59e0b' : '#d1d5db', fill: pkg.featured ? '#f59e0b' : 'none' }} />
                                     }
                                   </button>
-                                  {pkg.featured && pkg.featuredAt && (
-                                    <span style={{ fontSize: 9, color: '#f59e0b', fontWeight: 600, whiteSpace: 'nowrap' }}>
-                                      {pkg.featuredDays}d
-                                    </span>
-                                  )}
                                 </div>
                               )}
                             </td>
@@ -2049,37 +2028,6 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* ── Feature Duration Modal ── */}
-      {featureModal && (
-        <div style={{ ...S.overlay, alignItems: 'center' }} onClick={e => e.target === e.currentTarget && setFeatureModal(null)}>
-          <div style={{ background: '#fff', borderRadius: 20, width: '100%', maxWidth: 360, padding: 28, boxShadow: '0 20px 60px rgba(0,0,0,0.2)', textAlign: 'center' }}>
-            <div style={{ width: 52, height: 52, borderRadius: '50%', background: '#fffbeb', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
-              <Star size={24} style={{ color: '#f59e0b', fill: '#f59e0b' }} />
-            </div>
-            <h3 style={{ fontWeight: 700, fontSize: 17, color: '#111', marginBottom: 6 }}>Add to Hero Banner</h3>
-            <p style={{ color: '#6b7280', fontSize: 13, lineHeight: 1.6, marginBottom: 20 }}>
-              How many days should this package appear in the hero slider?
-            </p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center', marginBottom: 24 }}>
-              <input
-                type="number" min="1" max="365"
-                value={featureDays}
-                onChange={e => setFeatureDays(e.target.value)}
-                autoFocus
-                style={{ width: 90, padding: '10px 12px', borderRadius: 10, border: '1.5px solid #fde68a', fontSize: 22, fontWeight: 800, textAlign: 'center', outline: 'none', color: '#111', background: '#fffbeb' }}
-              />
-              <span style={{ fontSize: 15, color: '#6b7280', fontWeight: 600 }}>days</span>
-            </div>
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button onClick={() => setFeatureModal(null)} style={{ flex: 1, padding: '11px 0', borderRadius: 10, border: '1px solid #e5e7eb', background: '#fff', color: '#6b7280', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Cancel</button>
-              <button onClick={handleFeatureConfirm} disabled={!featureDays || parseInt(featureDays) < 1} style={{ flex: 1, padding: '11px 0', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg,#f59e0b,#d97706)', color: '#fff', fontWeight: 700, fontSize: 13, cursor: !featureDays || parseInt(featureDays) < 1 ? 'not-allowed' : 'pointer', opacity: !featureDays || parseInt(featureDays) < 1 ? 0.6 : 1 }}>
-                <Star size={13} style={{ display: 'inline', marginRight: 5, fill: '#fff', verticalAlign: 'middle' }} />
-                Add to Hero
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
       {/* ── Testimonial Modal ── */}
       {testimonialModal && (
         <div style={S.modalOverlay}>

@@ -41,7 +41,7 @@ const Navbar = () => {
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
             <Link href="/" className="flex items-center group">
-              <div className="relative w-28 h-9 md:w-32 md:h-10 group-hover:opacity-90 transition-transform origin-left">
+              <div className="relative w-40 h-12 md:w-48 md:h-14 group-hover:opacity-90 transition-transform origin-left">
                 <Image
                   src="/logo-rtw.png"
                   alt="R Travel World"
